@@ -3,12 +3,11 @@
 #       PlayImages.py - Play Images Application.
 #
 # FUNCTIONAL DESCRIPTION.
-#       The app plays images. 
-#       Usage
-#           python PlayImages.py --video Data/IMG_1438.TRIM.MOV
+#       The app plays images or video optionally step by step. The app is also 
+#       a template. We can modify it for specific purpose of computer vision.
 #
 # NOTICE.
-#       Author: zhugy2@lenovo.com (Guang Yu Zhu)
+#       Author: visualge@gmail.com (CountChu)
 #       Created on 2019/6/3
 #
 
@@ -34,9 +33,27 @@ import Video
     
 def buildArgParser():
 
+    desc = '''
+The app plays images or video optionally step by step.
+
+Usage 1: python PlayImages.py --images Test1 --step
+    Play images in the directory Test1 step by step
+    
+Usage 2: python PlayImages.py --images Test1 --fps -r
+    Play images in the directory Test1 with FPS and combined them in a video out.mp4.
+
+Usage 3: python PlayImages.py --fps -r
+    Open camera with FPS and save frames in out.mp4.     
+    
+Usage 4: python PlayImages.py --video Test1.mp4 --ri Output
+    Play the video Test1.mp4. You can modify the app to handle the video, 
+    and output the result images in the directory Output.        
+'''
+
     parser = argparse.ArgumentParser(
-                description='Build ...')
-                
+                formatter_class=argparse.RawTextHelpFormatter,
+                description=desc)
+
     #
     # Standard arguments
     #
@@ -110,8 +127,21 @@ def buildArgParser():
             "--fps", 
             dest="fps", 
             action='store_true',    
-            help="Display fps.")            
-            
+            help="Display fps.")          
+
+    parser.add_argument(
+            "--bn", 
+            dest="basename", 
+            action='store_true',    
+            help="Display base name.")    
+
+    parser.add_argument(
+            "--sd", 
+            dest="slowdown", 
+            type=int,
+            default=0,
+            help="It follows -r. It slows down the output video by specifying a number of repeated frames")             
+       
     return parser
     
 def readConfig(jsonFn):   
@@ -278,6 +308,8 @@ def main():
 
         if not grabbed:
             break
+
+        text = ''
             
         #    
         # Calculate Frames per second (FPS) if --fps
@@ -286,9 +318,12 @@ def main():
         if args.fps:
             elapsedTime = (datetime.datetime.now() - startTime).total_seconds()
             fps = video.num / elapsedTime
-            text = 'FPS: %d, Number %d' % (int(fps), video.num)
-        else:
-            text = '%d' % (video.num)
+            text += 'FPS: %d, Num: %d, ' % (int(fps), video.num)
+            
+        if args.basename:
+            text += 'Name: %s, ' % os.path.basename(video.imgFnDict[video.num])
+        if text[-2: ] == ', ':
+            text = text[0:-2]
             
         #
         # Show video.num
@@ -318,8 +353,8 @@ def main():
             if vw == None:
                 vw = Video.videoWriter(frame, outFileName)
             vw.write(frame)    
-            #vw.write(frame)
-            #vw.write(frame)
+            for i in range(args.slowdown):
+                vw.write(frame)
             
         #
         # Record the frame in a image if --ri
@@ -366,6 +401,7 @@ def main():
     video.close()
     cv2.destroyAllWindows()
     if args.record:
+        print('Write %s.' % outFileName)
         vw.release()
         
     if args.logFn != None:

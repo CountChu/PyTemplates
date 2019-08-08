@@ -35,8 +35,22 @@ import Util
     
 def buildArgParser():
 
+    desc = '''
+The app plays images or video optionally step by step.
+
+Usage 1: python PlayImages.py --images Test1 --step
+    Play images in the directory Test1 step by step
+    
+Usage 2: python PlayImages.py --images Test1 --fps -r
+    Play images in the directory Test1 with FPS and combined them in a video out.mp4.
+
+Usage 3: python PlayImages.py --fps -r
+    Open camera with FPS and save frames in out.mp4.     
+'''
+
     parser = argparse.ArgumentParser(
-                description='Build ...')
+                formatter_class=argparse.RawTextHelpFormatter,
+                description=desc)
                 
     #
     # Standard arguments
@@ -188,6 +202,14 @@ def main():
     if args.outputDir is None:
         args.outputDir = '%s#CommandApp' % args.dir
         print('Specify outputDir = %s' % args.outputDir)
+                
+    #
+    # Check outputDir. If it doesn't exist, built it.
+    #
+    
+    if not os.path.exists(outputDir):
+        print('Make directory: %s' % outputDir) 
+        os.mkdir(outputDir)            
 
     #
     # Read file content if the file argment exists.

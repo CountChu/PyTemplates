@@ -24,16 +24,50 @@ class Video:
     def loadImageFiles(self, imageDir, beginNum, endNum):
     
         #
+        # Get bnList of base name list.
+        #
+        
+        idList = []
+        for imgFn in os.listdir(imageDir):
+            bn = os.path.basename(imgFn)
+            id = os.path.splitext(bn)[0]
+            idList.append(id)
+            
+        isDigit = True    
+        for id in idList:
+            if not id.isdigit():
+                isDigit = False
+                break
+        
+        newIdList = []
+        for id in idList:
+            if isDigit:
+                id = int(id)
+                newIdList.append(id)
+            else:
+                newIdList.append(id)
+        newIdList.sort()
+        
+        idDict = {}
+        for i, id in enumerate(newIdList):
+            if isDigit:
+                idDict[str(id)] = i
+            else:
+                idDict[id] = i
+        #pdb.set_trace()
+                
+        #
         # Get image list
         #
         
         self.imgFnDict = {}
         for imgFn in os.listdir(imageDir):
             baseName = os.path.basename(imgFn)
-            num = os.path.splitext(baseName)[0]
-            num = int(num)
+            id = os.path.splitext(baseName)[0]
+            num = idDict[id]
             imgFn = '%s/%s' % (imageDir, imgFn)
             self.imgFnDict[num] = imgFn
+        #pdb.set_trace()
             
         #
         # Assign num
