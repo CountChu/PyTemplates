@@ -1,8 +1,39 @@
+#
+# FILENAME.
+#       Video.py - Video Module.
+#
+# FUNCTIONAL DESCRIPTION.
+#       The module privides API to open camera, play a video, and play images.
+#
+# NOTICE.
+#       COMPANY_NAME Confidential
+#       COPYRIGHT COMPANY_NAME 2019 All RIGHTS RESERVED
+#       Author: visualge@gmail.com (CountChu)
+#       Created on 2019/4/24
+#
+
+#
+# Include standard packages.
+#
+
 import cv2
 import os
 import logging
 import pdb
 import time
+
+#
+# Include specific packages.
+#
+
+#
+#   The class provides features as below to play images or video.
+#   1. open a camera
+#   2. load a video file
+#   3. load images.
+#   4. play the next image (or frame)
+#   5. play the previous image (or frame) 
+#
 
 class Video:
 
@@ -116,9 +147,7 @@ class Video:
             frame = cv2.imread(imgFn)
             
             self.next()
-            return (True, frame)
-            
-          
+            return (True, frame)    
             
     def currentFrame(self):
     
