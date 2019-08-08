@@ -4,7 +4,7 @@
 #
 # FUNCTIONAL DESCRIPTION.
 #       The app plays images or video optionally step by step. The app is also 
-#       a template. We can modify it for specific purpose of computer vision.
+#       a template. We can modify it to develop applications of computer vision.
 #
 # NOTICE.
 #       Author: visualge@gmail.com (CountChu)
