@@ -100,16 +100,29 @@ Usage 3: python PlayImages.py --fps -r
     return parser
 
 def readConfig(jsonFn):   
+
+    #
+    # Check if jsonFn exists.
+    #
+
     if not os.path.exists(jsonFn):
         return None
 
-    f = open(jsonFn, 'r')
-    lines = f.readlines()
-    jsonStr = ''.join(lines)
-    jsonObj = json.loads(jsonStr)
+    #
+    # Read lines from json file.
+    #
+
+    f = open(labelFn)
+    lines = f.read()
     f.close()
     
-    return jsonObj     
+    #
+    # Load lines in jsonDict.
+    #
+    
+    jsonDict = json.loads(lines)
+    
+    return jsonDict     
     
 #
 # It reads file content into lines.
@@ -178,21 +191,21 @@ def main():
     #
 
     jsonFn = 'CommandApp.json'
-    jsonObj = readConfig(jsonFn)
+    jsonDict = readConfig(jsonFn)
     
     #
     # Override args
     #
     
-    if jsonObj != None:
-        if 'default' in jsonObj:
-            if 'dir' in jsonObj['default']: 
+    if jsonDict != None:
+        if 'default' in jsonDict:
+            if 'dir' in jsonDict['default']: 
                 if args.dir is None:
-                    args.dir = jsonObj['default']['dir']
+                    args.dir = jsonDict['default']['dir']
                     print('Override dir = %s' % args.dir)
-            if 'outputDir' in jsonObj['default']:
+            if 'outputDir' in jsonDict['default']:
                 if args.outputDir is None:
-                    args.outputDir = jsonObj['default']['outputDir']
+                    args.outputDir = jsonDict['default']['outputDir']
                     print('Override outputDir = %s' % args.outputDir)
 
     #
@@ -207,9 +220,9 @@ def main():
     # Check outputDir. If it doesn't exist, built it.
     #
     
-    if not os.path.exists(outputDir):
-        print('Make directory: %s' % outputDir) 
-        os.mkdir(outputDir)            
+    if not os.path.exists(args.outputDir):
+        print('Make directory: %s' % args.outputDir) 
+        os.mkdir(args.outputDir)            
 
     #
     # Read file content if the file argment exists.

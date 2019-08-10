@@ -23,12 +23,14 @@ import time
 import cv2
 import os
 import json
+import sys
 
 #
 # Include specific packages.
 #
 
 import Video
+import Util
 
 #
 # Build argument parser and return it.
@@ -181,6 +183,24 @@ def dispatchKey(key, step, video):
             video.previous()    
         
     return True
+    
+#
+# It reads base names in the dir directory.
+#    
+    
+def readBaseNames(dir):
+    baseNameList = []
+    if not os.path.exists(dir):
+            print('Error! The directory is not found.')
+            print(dir)
+            sys.exit(0)
+            
+    for fn in os.listdir(dir):
+        path = os.path.join(dir, fn)
+        if not os.path.isdir(path):
+            baseNameList.append(fn)
+    
+    return baseNameList    
    
 def main():      
 
@@ -312,6 +332,10 @@ def main():
         if not grabbed:
             break
 
+        #
+        # Declare text for displaying
+        #
+        
         text = ''
             
         #    
@@ -341,6 +365,12 @@ def main():
                 0.75,
                 (0, 0, 255), 
                 2)
+                
+        #
+        # Here handle the frame.
+        #
+        
+        Util.handle(frame)
 
         #
         # show the frame
