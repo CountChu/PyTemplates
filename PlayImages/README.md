@@ -1,5 +1,5 @@
 # PlayImages
-The Python PlayImages.py plays images or video optionally step by step. The app is also a template. We can modify it to develop applications of computer vision.
+The Python [PlayImages.py](PlayImages.py) plays images or video optionally step by step. The app is also a template. We can modify it to develop applications of computer vision.
 
 ## Usage
 ```
@@ -50,7 +50,7 @@ optional arguments:
   -t                    Enable transformation.
 ```
 
-## Util.py
+## CV2 Examples in [Util.py](Util.py)
 ### def transform(frame)
 
 The function provides examples of cv2 functions as below.
@@ -64,6 +64,6 @@ You can try it by run the command.
 python PlayImages.py --images TestImages --step -t
 ```
 
-The you can see the green or red texts and pictures on the below frame.
+The you can see the green and red texts and pictures drawn by Util.transform() on the below frame.
 
 ![Image](Doc/Demo1.png)
