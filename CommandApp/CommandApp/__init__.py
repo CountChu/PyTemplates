@@ -101,31 +101,6 @@ Usage 3: python CommandApp.py -d images -o output
 
     return parser
 
-def readConfig(jsonFn):
-
-    #
-    # Check if jsonFn exists.
-    #
-
-    if not os.path.exists(jsonFn):
-        return None
-
-    #
-    # Read lines from json file.
-    #
-
-    f = open(labelFn)
-    lines = f.read()
-    f.close()
-
-    #
-    # Load lines in jsonDict.
-    #
-
-    jsonDict = json.loads(lines)
-
-    return jsonDict
-
 #
 # It reads file content into lines.
 #
@@ -224,13 +199,6 @@ def main():
     if not os.path.exists(args.outputDir):
         print('Make directory: %s' % args.outputDir)
         os.mkdir(args.outputDir)
-
-    #
-    # Read file content if the file argment exists.
-    #
-
-    if 'file' in args and args.file != None:
-        lines = readFileContent(args.file)
 
     #
     # Read file base names if -d.
