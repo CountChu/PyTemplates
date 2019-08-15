@@ -1,9 +1,7 @@
 import sys
 
-print ('main......')
-
 def main():
-    print('main()......')
+    print('main() in module2')
     print(sys.argv)
 
 if __name__ == '__main__':
