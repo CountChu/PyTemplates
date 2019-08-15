@@ -64,6 +64,11 @@ Usage 3: python CommandApp.py -d images -o output
             dest='logFn',
             help='A name of a log file.')
 
+    parser.add_argument(
+            '--cfg',
+            action='store_true',
+            help="Read Config.py")
+
     #
     # Anonymous arguments.
     #
@@ -184,26 +189,25 @@ def main():
         logF = open(args.logFn, 'w')
 
     #
-    # Read config.
+    # If --cfg, read Config and override args.
     #
 
-    jsonFn = 'CommandApp.json'
-    jsonDict = readConfig(jsonFn)
+    if args.cfg:
+        from CommandApp.Config import Config
+        logging.info('Config = %s' % Config)
 
-    #
-    # Override args
-    #
+        #
+        # Override args
+        #
 
-    if jsonDict != None:
-        if 'default' in jsonDict:
-            if 'dir' in jsonDict['default']:
-                if args.dir is None:
-                    args.dir = jsonDict['default']['dir']
-                    print('Override dir = %s' % args.dir)
-            if 'outputDir' in jsonDict['default']:
-                if args.outputDir is None:
-                    args.outputDir = jsonDict['default']['outputDir']
-                    print('Override outputDir = %s' % args.outputDir)
+        if 'dir' in Config:
+            if args.dir is None:
+                args.dir = Config['dir']
+                print('Override dir = %s' % args.dir)
+        if 'outputDir' in Config:
+            if args.outputDir is None:
+                args.outputDir = Config['outputDir']
+                print('Override outputDir = %s' % args.outputDir)
 
     #
     # Specify outputDir
