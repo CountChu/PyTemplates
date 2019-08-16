@@ -24,42 +24,43 @@ import cv2
 import os
 import json
 import sys
+import re
 
 #
 # Include specific packages.
 #
 
-import Video
-import Util
+import plyimg.video
+import plyimg.util
 
 #
 # Build argument parser and return it.
 #
 
-def buildArgParser():
+def build_args():
 
     desc = '''
 The app plays images or video optionally step by step.
 
-Usage 1: python PlayImages.py --video TestVideo/video.MP4 --step
+Usage 1: python -m plyimg --video TestVideo/video.MP4 --step
     Play the video file step by step.
 
-Usage 2: python PlayImages.py --video TestVideo/video.MP4 --ri TestImages
+Usage 2: python -m plyimg --video TestVideo/video.MP4 --ri TestImages
     Play the video file and save frames in the TestImages directory.
 
-Usage 3: python PlayImages.py --images TestImages --step
+Usage 3: python -m plyimg --images TestImages --step
     Play images in the directory TestImages step by step.
 
-Usage 4: python PlayImages.py --images TestImages --fps -r
+Usage 4: python -m plyimg --images TestImages --fps -r
     Play images in the directory TestImages with FPS and combined them in a
     video out.mp4.
 
-Usage 5: python PlayImages.py --images TestImages --step -t
+Usage 5: python -m plyimg --images TestImages --step -t
     Play images in the directory TestImages step by step and transform each
     frame by calling Util.transform(). You can modify the function to develop
     your specific application of computer vision.
 
-Usage 6: python PlayImages.py --fps -r
+Usage 6: python -m plyimg --fps -r
     Open camera with FPS and save frames in out.mp4.
 '''
 
@@ -72,10 +73,26 @@ Usage 6: python PlayImages.py --fps -r
     #
 
     parser.add_argument(
-            "-v",
+            "--verbose",
             dest="verbose",
             action='store_true',
             help="Verbose log")
+
+    parser.add_argument(
+            "--debug",
+            dest="debug",
+            action='store_true',
+            help="Show debug messages")
+
+    parser.add_argument(
+            '--log',
+            dest='log_fn',
+            help='A name of a log file.')
+
+    parser.add_argument(
+            '--cfg',
+            action='store_true',
+            help="Import Config.py")
 
     #
     # Anonymous arguments.
@@ -87,24 +104,24 @@ Usage 6: python PlayImages.py --fps -r
 
     parser.add_argument(
             "--video",
-            dest="videoFn",
+            dest="video_fn",
             help="A path to the video file")
 
     parser.add_argument(
             '--images',
-            dest='imagesDir',
+            dest='images_dir',
             help='A directory that contains images')
 
     parser.add_argument(
             "--begin",
-            dest="beginNum",
+            dest="begin_num",
             type=int,
             default=0,
             help="Begin of the images")
 
     parser.add_argument(
             "--end",
-            dest="endNum",
+            dest="end_num",
             type=int,
             help="End of the images")
 
@@ -116,7 +133,7 @@ Usage 6: python PlayImages.py --fps -r
 
     parser.add_argument(
             "--goto",
-            dest="gotoNum",
+            dest="goto_num",
             type=int,
             help="The argument follows --step.")
 
@@ -127,13 +144,8 @@ Usage 6: python PlayImages.py --fps -r
             help="Record video.")
 
     parser.add_argument(
-            '--log',
-            dest='logFn',
-            help='A name of a log file.')
-
-    parser.add_argument(
             "--ri",
-            dest="recordImagesDir",
+            dest="record_images_dir",
             help="A directory where images are recorded")
 
     parser.add_argument(
@@ -161,21 +173,54 @@ Usage 6: python PlayImages.py --fps -r
             action='store_true',
             help="Enable transformation.")
 
-    return parser
+    return parser.parse_args()
 
-def readConfig(jsonFn):
-    if not os.path.exists(jsonFn):
-        return None
+#
+# It reads base names in the dir directory.
+#
 
-    f = open(jsonFn, 'r')
-    lines = f.readlines()
-    jsonStr = ''.join(lines)
-    jsonObj = json.loads(jsonStr)
-    f.close()
+def read_base_names(dir):
+    bn_list = []
+    if not os.path.exists(dir):
+            print('Error! The directory is not found.')
+            print(dir)
+            sys.exit(0)
 
-    return jsonObj
+    for fn in os.listdir(dir):
+        path = os.path.join(dir, fn)
+        if not os.path.isdir(path):
+            bn_list.append(fn)
 
-def dispatchKey(key, step, video):
+    return bn_list
+
+#
+# It load Config.py
+#
+
+def read_config():
+
+    pattern = "\<module\s\\'(.+)\\'\sfrom"
+    text = str(sys.modules[__name__])
+    logging.info('text = %s' % text)
+    res = re.match(pattern, text)
+    #pdb.set_trace()
+    name = res.group(1)
+
+    from config import config
+    return config[name]
+
+#
+# Specify a default value for args.name if it doesn't exist.
+#
+
+def set_default_arg(config, args, arg, name):
+    if arg in config:
+        #pdb.set_trace()
+        if vars(args)[name] is None:
+            vars(args)[name] = config[arg]
+            print('Override %s = %s' % (name, vars(args)[name]))
+
+def dispatch_key(key, step, v):
 
     #
     # If the 'q' key is pressed, break from the lop
@@ -191,30 +236,12 @@ def dispatchKey(key, step, video):
     if step:
 
         if key in [ord('>'), ord('.')]: # next
-            video.next()
+            v.next()
 
         elif key in [ord('<'), ord(',')]: # previous
-            video.previous()
+            v.previous()
 
     return True
-
-#
-# It reads base names in the dir directory.
-#
-
-def readBaseNames(dir):
-    baseNameList = []
-    if not os.path.exists(dir):
-            print('Error! The directory is not found.')
-            print(dir)
-            sys.exit(0)
-
-    for fn in os.listdir(dir):
-        path = os.path.join(dir, fn)
-        if not os.path.isdir(path):
-            baseNameList.append(fn)
-
-    return baseNameList
 
 def main():
 
@@ -222,68 +249,73 @@ def main():
     # Parse arguments
     #
 
-    args = buildArgParser().parse_args()
+    args = build_args()
 
     #
     # Enable log if -v
     #
 
-    if args.verbose:
+    if args.debug:
         logging.basicConfig(level=logging.DEBUG, format='%(message)s')
     logging.info(args)
+
+    #
+    # Enable verbose messages if --verbose
+    #
+
+    if args.verbose:
+        print('.............verbose..............')
 
     #
     # Check arguments.
     #
 
-    if args.videoFn is not None and args.imagesDir is not None:
+    if args.video_fn is not None and args.images_dir is not None:
         print ('Error. Arguments are wrong.')
         sys.exit(0)
 
     #
-    # Open log file if --log
+    # Open a log file if --log
     #
 
-    if args.logFn != None:
-        logF = open(args.logFn, 'w')
+    if args.log_fn != None:
+        log_f = open(args.log_fn, 'w')
 
     #
-    # Read config.
+    # If --cfg, specify default values if args don't exist.
     #
 
-    jsonFn = 'DetectMotion.json'
-    jsonObj = readConfig(jsonFn)
+    if args.cfg:
+        config = read_config()
 
-    #
-    # Override args
-    #
+        #
+        # Override args
+        #
 
-    if jsonObj != None:
-        if 'imagesDir' in jsonObj['dataSet']:
-            args.imagesDir = jsonObj['dataSet']['imagesDir']
-            print('Override imagesDir = %s' % args.imagesDir)
+        set_default_arg(config, args, '--video', 'video_fn')
+        set_default_arg(config, args, '--ri', 'record_images_dir')
 
     #
     # Create a video object.
     #
 
-    video = Video.Video()
+    v = video.Video()
 
     #
     # Load a video file if --video
     #
 
-    if args.videoFn is not None:
-        print('Load a video file from %s.' % args.videoFn)
-        video.loadVideoFile(args.videoFn)
+    if args.video_fn is not None:
+        print('Load a video file from %s.' % args.video_fn)
+        v.load_video_file(args.video_fn)
 
     #
     # Load image files if --images
     #
 
-    if args.imagesDir is not None:
-        print('Load image files from %s.' % args.imagesDir)
-        video.loadImageFiles(args.imagesDir, args.beginNum, args.endNum)
+    if args.images_dir is not None:
+        print('Load image files from %s.' % args.images_dir)
+        v.load_image_files(args.images_dir, args.begin_num, args.end_num)
 
     #pdb.set_trace()
 
@@ -291,16 +323,16 @@ def main():
     # Open camera if --video and --images are not specified.
     #
 
-    if args.videoFn is None and args.imagesDir is None:
+    if args.video_fn is None and args.images_dir is None:
         print('Open the camera.')
-        video.openCamera()
+        v.open_cam()
 
     #
     # Build VideoWriter if -r.
     #
 
     if args.record:
-        outFileName = 'out.mp4'
+        out_fn = 'out.mp4'
         vw = None
 
     #
@@ -308,8 +340,8 @@ def main():
     #
 
     if args.fps:
-        startTime = datetime.datetime.now()
-        numFrames = 0
+        start_time = datetime.datetime.now()
+        num_frames = 0
 
     #
     # loop over the frames of the video
@@ -317,10 +349,10 @@ def main():
 
     while True:
 
-        line = '----------------------------------------------------------- video.num = %d ' % video.num
+        line = '----------------------------------------------------------- v.num = %d ' % v.num
         logging.info(line)
-        if args.logFn != None:
-            logF.write(line+'\n')
+        if args.log_fn != None:
+            log_f.write(line+'\n')
 
         #
         # grab the current frame and initialize the occupied/unoccupied
@@ -328,15 +360,15 @@ def main():
         #
 
         if args.step:
-            if args.gotoNum is None:
-                (grabbed, frame) = video.currentFrame()
+            if args.goto_num is None:
+                (grabbed, frame) = v.cur_frame()
             else:
-                if video.num >= args.gotoNum:
-                    (grabbed, frame) = video.currentFrame()
+                if v.num >= args.goto_num:
+                    (grabbed, frame) = v.cur_frame()
                 else:
-                    (grabbed, frame) = video.nextFrame()
+                    (grabbed, frame) = v.next_frame()
         else:
-            (grabbed, frame) = video.nextFrame()
+            (grabbed, frame) = v.next_frame()
 
         #
         # if the frame could not be grabbed, then we have reached the end
@@ -357,12 +389,12 @@ def main():
         #
 
         if args.fps:
-            elapsedTime = (datetime.datetime.now() - startTime).total_seconds()
-            fps = video.num / elapsedTime
-            text += 'FPS: %d, Num: %d, ' % (int(fps), video.num)
+            elapsed_time = (datetime.datetime.now() - start_time).total_seconds()
+            fps = v.num / elapsed_time
+            text += 'FPS: %d, Num: %d, ' % (int(fps), v.num)
 
         if args.basename:
-            text += 'Name: %s, ' % os.path.basename(video.imgFnDict[video.num])
+            text += 'Name: %s, ' % os.path.basename(v.img_fn_dict[v.num])
         if text[-2: ] == ', ':
             text = text[0:-2]
 
@@ -385,7 +417,7 @@ def main():
         #
 
         if args.transform:
-            Util.transform(frame)
+            util.transform(frame)
 
         #
         # show the frame
@@ -399,7 +431,7 @@ def main():
 
         if args.record:
             if vw == None:
-                vw = Video.videoWriter(frame, outFileName)
+                vw = video.video_writer(frame, out_fn)
             vw.write(frame)
             for i in range(args.slowdown):
                 vw.write(frame)
@@ -408,11 +440,11 @@ def main():
         # Record the frame in a image if --ri
         #
 
-        if args.recordImagesDir != None:
-            if not os.path.exists(args.recordImagesDir):
-                print('Create %s' % args.recordImagesDir)
-                os.mkdir(args.recordImagesDir)
-            fn = '%s/%04d.jpg' % (args.recordImagesDir, video.num)
+        if args.record_images_dir != None:
+            if not os.path.exists(args.record_images_dir):
+                print('Create %s' % args.record_images_dir)
+                os.mkdir(args.record_images_dir)
+            fn = '%s/%04d.jpg' % (args.record_images_dir, v.num)
             print('Write %s' % fn)
             cv2.imwrite(fn, frame)
 
@@ -422,11 +454,11 @@ def main():
 
         step = False
         if args.step:
-            if args.gotoNum is None:
+            if args.goto_num is None:
                 key = cv2.waitKey(0)
                 step = True
             else:
-                if video.num >= args.gotoNum:
+                if v.num >= args.goto_num:
                     key = cv2.waitKey(0)
                     step = True
                 else:
@@ -438,7 +470,7 @@ def main():
         # Dispatch key.
         #
 
-        if not dispatchKey(key, step, video):
+        if not dispatch_key(key, step, v):
             break
 
 
@@ -446,13 +478,13 @@ def main():
     # cleanup the camera and close any open windows
     #
 
-    video.close()
+    v.close()
     cv2.destroyAllWindows()
     if args.record:
-        print('Write %s.' % outFileName)
+        print('Write %s.' % out_fn)
         vw.release()
 
-    if args.logFn != None:
-        logF.close()
+    if args.log_fn != None:
+        log_f.close()
 
 main()
