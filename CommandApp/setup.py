@@ -39,7 +39,7 @@ def get_desc():
     return desc
 
 setup(
-    name='CommandApp',
+    name='command_app',
     version='0.1',
     description=get_desc(),
     url='https://github.com/CountChu/PyTemplates/tree/master/CommandApp',
