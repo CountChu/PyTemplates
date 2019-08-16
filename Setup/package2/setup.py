@@ -1,7 +1,7 @@
 from setuptools import setup
 from setuptools import find_packages
 
-def getDescription():
+def get_desc():
 
     #
     # Read README.md
@@ -40,9 +40,9 @@ def getDescription():
 setup(
     name='package2',
     version='0.1',
-    description=getDescription(),
+    description=get_desc(),
     url='http://github.com/countchu',
-    author='Chu',
+    author='CountChu',
     author_email='visualge@gmail.com',
     license='MIT',
     packages=find_packages(),

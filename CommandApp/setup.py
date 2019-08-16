@@ -2,7 +2,7 @@ from setuptools import setup
 from setuptools import find_packages
 import pdb
 
-def getDescription():
+def get_desc():
 
     #
     # Read README.md
@@ -39,9 +39,9 @@ def getDescription():
     return desc
 
 setup(
-    name='CommandApp',
+    name='command_app',
     version='0.1',
-    description=getDescription(),
+    description=get_desc(),
     url='https://github.com/CountChu/PyTemplates/tree/master/CommandApp',
     author='CountChu',
     author_email='visualge@gmail.com',

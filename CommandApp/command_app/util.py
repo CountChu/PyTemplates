@@ -1,9 +1,9 @@
 #
 # FILENAME.
-#       Util.py - COMPANY_NAME(TM) Utility Module.
+#       util.py - COMPANY_NAME(TM) Utility Module.
 #
 # FUNCTIONAL DESCRIPTION.
-#       The module provide app with API. 
+#       The module provide app with API.
 #
 # NOTICE.
 #       COMPANY_NAME Confidential
@@ -24,9 +24,9 @@
 # It handles them.
 #
 
-def handle(fn, dir, baseNameList, outputDir):
+def handle(fn, dir, bn_list, out_dir):
     print('handle()')
     print('fn = %s' % fn)
     print('dir = %s' % dir)
-    print('baseNameList = %s' % baseNameList)
-    print('outputDir = %s' % outputDir)
+    print('bn_list = %s' % bn_list)
+    print('out_dir = %s' % out_dir)
