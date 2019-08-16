@@ -22,6 +22,7 @@ import pdb
 import os
 import json
 import sys
+import re
 
 #
 # Include specific packages.
@@ -148,14 +149,25 @@ def read_base_names(dir):
 
 def read_config():
 
-    pattern = "\<module\s\\'(\w+\.\w+)\\'"
+    pattern = "\<module\s\\'(.+)\\'\sfrom"
     text = str(sys.modules[__name__])
     logging.info('text = %s' % text)
     res = re.match(pattern, text)
+    #pdb.set_trace()
     name = res.group(1)
 
     from config import config
     return config[name]
+
+#
+# Specify a default value for args.name if it doesn't exist.
+#
+
+def set_default_arg(config, args, arg, name):
+    if arg in config:
+        if vars(args)[name] is None:
+            vars(args)[name] = config[arg]
+            print('Override %s = %s' % (name, vars(args)[name]))
 
 def main():
 
@@ -164,6 +176,7 @@ def main():
     #
 
     args = build_args()
+    #pdb.set_trace()
 
     #
     # Enable debug messages if --debug
@@ -192,7 +205,7 @@ def main():
         log_f = open(args.log_fn, 'w')
 
     #
-    # If --cfg, read config and override args.
+    # If --cfg, specify default values if args don't exist.
     #
 
     if args.cfg:
@@ -202,14 +215,8 @@ def main():
         # Override args
         #
 
-        if 'dir' in Config:
-            if args.dir is None:
-                args.dir = config['dir']
-                print('Override dir = %s' % args.dir)
-        if 'out_dir' in Config:
-            if args.out_dir is None:
-                args.out_dir = config['out_dir']
-                print('Override outputDir = %s' % args.outputDir)
+        set_default_arg(config, args, '-d', 'dir')
+        set_default_arg(config, args, '-o', 'out_dir')
 
     #
     # Specify out_dir
