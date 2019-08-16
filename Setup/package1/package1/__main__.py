@@ -1,7 +1,7 @@
 import sys
 import os.path
 
-def getUsage(fn):
+def get_usage(fn):
 
     #
     # Read README.md
@@ -56,7 +56,7 @@ def main():
     print('')
 
     fn = os.path.join(__file__, '..', '..', 'README.md')
-    usage = getUsage(fn)
+    usage = get_usage(fn)
     print(usage)
 
 if __name__ == '__main__':

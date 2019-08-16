@@ -27,22 +27,22 @@ import sys
 # Include specific packages.
 #
 
-import CommandApp.Util
+import command_app.util
 
 #
-# Build argument parser and return it.
+# Build arguments
 #
 
-def buildArgParser():
+def build_args():
 
     desc = '''
 The app parses command lines and dispatches the commands.
 
-Usage 1: python CommandApp.py README.md
+Usage 1: python -m command_app README.md
 
-Usage 2: python CommandApp.py -d images
+Usage 2: python -m command_app README.md -d images
 
-Usage 3: python CommandApp.py -d images -o output
+Usage 3: python -m command_app README.md -d images -o output
 '''
 
     parser = argparse.ArgumentParser(
@@ -54,20 +54,26 @@ Usage 3: python CommandApp.py -d images -o output
     #
 
     parser.add_argument(
-            "-v",
+            "--verbose",
             dest="verbose",
             action='store_true',
-            help="Verbose log")
+            help="Print verbose messages")
+
+    parser.add_argument(
+            "--debug",
+            dest="debug",
+            action='store_true',
+            help="Show debug messages")
 
     parser.add_argument(
             '--log',
-            dest='logFn',
+            dest='log_fn',
             help='A name of a log file.')
 
     parser.add_argument(
             '--cfg',
             action='store_true',
-            help="Read Config.py")
+            help="Import Config.py")
 
     #
     # Anonymous arguments.
@@ -89,7 +95,7 @@ Usage 3: python CommandApp.py -d images -o output
 
     parser.add_argument(
             '-o',
-            dest='outputDir',
+            dest='out_dir',
             help='A directory that contains output results')
 
     parser.add_argument(
@@ -99,13 +105,13 @@ Usage 3: python CommandApp.py -d images -o output
             dest="start",
             help="Input start")
 
-    return parser
+    return parser.parse_args()
 
 #
 # It reads file content into lines.
 #
 
-def readFileContent(fn):
+def read_file_content(fn):
 
     if not os.path.exists(fn):
         print('Error! The file is not found.')
@@ -122,8 +128,8 @@ def readFileContent(fn):
 # It reads base names in the dir directory.
 #
 
-def readBaseNames(dir):
-    baseNameList = []
+def read_base_names(dir):
+    bn_list = []
     if not os.path.exists(dir):
             print('Error! The directory is not found.')
             print(dir)
@@ -132,9 +138,24 @@ def readBaseNames(dir):
     for fn in os.listdir(dir):
         path = os.path.join(dir, fn)
         if not os.path.isdir(path):
-            baseNameList.append(fn)
+            bn_list.append(fn)
 
-    return baseNameList
+    return bn_list
+
+#
+# It load Config.py
+#
+
+def read_config():
+
+    pattern = "\<module\s\\'(\w+\.\w+)\\'"
+    text = str(sys.modules[__name__])
+    logging.info('text = %s' % text)
+    res = re.match(pattern, text)
+    name = res.group(1)
+
+    from config import config
+    return config[name]
 
 def main():
 
@@ -142,15 +163,22 @@ def main():
     # Parse arguments
     #
 
-    args = buildArgParser().parse_args()
+    args = build_args()
 
     #
-    # Enable log if -v
+    # Enable debug messages if --debug
+    #
+
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG, format='%(message)s')
+    logging.info(args)
+
+    #
+    # Enable verbose messages if --verbose
     #
 
     if args.verbose:
-        logging.basicConfig(level=logging.DEBUG, format='%(message)s')
-    logging.info(args)
+        print('.............verbose..............')
 
     #
     # Check arguments.
@@ -160,16 +188,15 @@ def main():
     # Open a log file if --log
     #
 
-    if args.logFn != None:
-        logF = open(args.logFn, 'w')
+    if args.log_fn != None:
+        log_f = open(args.log_fn, 'w')
 
     #
-    # If --cfg, read Config and override args.
+    # If --cfg, read config and override args.
     #
 
     if args.cfg:
-        from CommandApp.Config import Config
-        logging.info('Config = %s' % Config)
+        config = read_config()
 
         #
         # Override args
@@ -177,49 +204,49 @@ def main():
 
         if 'dir' in Config:
             if args.dir is None:
-                args.dir = Config['dir']
+                args.dir = config['dir']
                 print('Override dir = %s' % args.dir)
-        if 'outputDir' in Config:
-            if args.outputDir is None:
-                args.outputDir = Config['outputDir']
+        if 'out_dir' in Config:
+            if args.out_dir is None:
+                args.out_dir = config['out_dir']
                 print('Override outputDir = %s' % args.outputDir)
 
     #
-    # Specify outputDir
+    # Specify out_dir
     #
 
-    if args.outputDir is None:
-        args.outputDir = '%s#CommandApp' % args.dir
-        print('Specify outputDir = %s' % args.outputDir)
+    if args.out_dir is None:
+        args.out_dir = '%s#CommandApp' % args.dir
+        print('Specify out_dir = %s' % args.out_dir)
 
     #
     # Check outputDir. If it doesn't exist, built it.
     #
 
-    if not os.path.exists(args.outputDir):
-        print('Make directory: %s' % args.outputDir)
-        os.mkdir(args.outputDir)
+    if not os.path.exists(args.out_dir):
+        print('Make directory: %s' % args.out_dir)
+        os.mkdir(args.out_dir)
 
     #
     # Read file base names if -d.
     #
 
-    baseNameList = []
+    bn_list = []
     if 'dir' in args and args.dir != None:
-        baseNameList = readBaseNames(args.dir)
+        bn_list = read_base_names(args.dir)
 
     #
     # Here is core function.
     #
 
     #pdb.set_trace()
-    Util.handle(args.file, args.dir, baseNameList, args.outputDir)
+    util.handle(args.file, args.dir, bn_list, args.out_dir)
 
     #
     # Close the log file if --log
     #
 
-    if args.logFn != None:
+    if args.log_fn != None:
         logF.close()
 
 main()
