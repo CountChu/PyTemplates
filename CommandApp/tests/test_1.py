@@ -6,11 +6,12 @@ class TestStringMethods(unittest.TestCase):
 
     def setUp(self):
         self.cmd_list = [
-            'python command_app.py -h',
-            'python -m command_app -h',
-            'python -m command_app README.md',
-            'python -m command_app README.md -d images',
-            'python -m command_app README.md -d images -o output',
+            'python cmd_app.py -h',
+            'python -m cmd_app -h',
+            'python -m cmd_app README.md',
+            'python -m cmd_app README.md -d images',
+            'python -m cmd_app README.md -d images -o output',
+            'python -m cmd_app README.md --cfg',            
             ]
 
     def test_commands(self):

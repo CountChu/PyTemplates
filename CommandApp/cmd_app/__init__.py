@@ -28,7 +28,7 @@ import re
 # Include specific packages.
 #
 
-import command_app.util
+import cmd_app.util
 
 #
 # Build arguments
@@ -39,11 +39,11 @@ def build_args():
     desc = '''
 The app parses command lines and dispatches the commands.
 
-Usage 1: python -m command_app README.md
+Usage 1: python -m cmd_app README.md
 
-Usage 2: python -m command_app README.md -d images
+Usage 2: python -m cmd_app README.md -d images
 
-Usage 3: python -m command_app README.md -d images -o output
+Usage 3: python -m cmd_app README.md -d images -o output
 '''
 
     parser = argparse.ArgumentParser(

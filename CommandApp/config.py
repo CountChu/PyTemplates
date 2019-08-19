@@ -1,5 +1,5 @@
 config = {
-    'command_app': {
+    'cmd_app': {
         "-d": "images",
         "-o": "output"
     }

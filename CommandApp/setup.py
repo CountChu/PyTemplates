@@ -45,7 +45,7 @@ def my_test_suite():
     return test_suite
 
 setup(
-    name='command_app',
+    name='cmd_app',
     version='0.1',
     description=get_desc(),
     url='https://github.com/CountChu/PyTemplates/tree/master/CommandApp',
