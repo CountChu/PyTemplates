@@ -74,7 +74,7 @@ Usage 3: python -m command_app README.md -d images -o output
     parser.add_argument(
             '--cfg',
             action='store_true',
-            help="Import Config.py")
+            help="Import config.py")
 
     #
     # Anonymous arguments.
