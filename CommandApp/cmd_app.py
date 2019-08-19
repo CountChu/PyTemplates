@@ -1,6 +1,6 @@
 #
 # FILENAME.
-#       command_app.py - COMPANY_NAME(TM) Command Python Application.
+#       cmd_app.py - COMPANY_NAME(TM) Command Python Application.
 #
 # FUNCTIONAL DESCRIPTION.
 #       The app parses command lines and dispatches the commands.
@@ -16,4 +16,4 @@
 # Import the module to run __init__.py
 #
 
-import command_app
+import cmd_app
