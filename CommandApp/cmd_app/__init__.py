@@ -28,7 +28,8 @@ import re
 # Include specific packages.
 #
 
-import cmd_app.util
+import cmd_app.util as util
+import cmd_app.core as core
 
 #
 # Build arguments
@@ -109,41 +110,6 @@ Usage 3: python -m cmd_app README.md -d images -o output
     return parser.parse_args()
 
 #
-# It reads file content into lines.
-#
-
-def read_file_content(fn):
-
-    if not os.path.exists(fn):
-        print('Error! The file is not found.')
-        print(fn)
-        sys.exit(0)
-
-    f = open(fn, 'r')
-    lines = f.readlines()
-    f.close()
-
-    return lines
-
-#
-# It reads base names in the dir directory.
-#
-
-def read_base_names(dir):
-    bn_list = []
-    if not os.path.exists(dir):
-            print('Error! The directory is not found.')
-            print(dir)
-            sys.exit(0)
-
-    for fn in os.listdir(dir):
-        path = os.path.join(dir, fn)
-        if not os.path.isdir(path):
-            bn_list.append(fn)
-
-    return bn_list
-
-#
 # It load Config.py
 #
 
@@ -158,16 +124,6 @@ def read_config():
 
     from config import config
     return config[name]
-
-#
-# Specify a default value for args.name if it doesn't exist.
-#
-
-def set_default_arg(config, args, arg, name):
-    if arg in config:
-        if vars(args)[name] is None:
-            vars(args)[name] = config[arg]
-            print('Override %s = %s' % (name, vars(args)[name]))
 
 def main():
 
@@ -215,8 +171,10 @@ def main():
         # Override args
         #
 
-        set_default_arg(config, args, '-d', 'dir')
-        set_default_arg(config, args, '-o', 'out_dir')
+        util.set_default_arg(config, args, '-d', 'dir')
+        util.set_default_arg(config, args, '-o', 'out_dir')
+
+        util.set_config(config)
 
     #
     # Specify out_dir
@@ -240,14 +198,14 @@ def main():
 
     bn_list = []
     if 'dir' in args and args.dir != None:
-        bn_list = read_base_names(args.dir)
+        bn_list = util.read_base_names(args.dir)
 
     #
     # Here is core function.
     #
 
     #pdb.set_trace()
-    util.handle(args.file, args.dir, bn_list, args.out_dir)
+    core.handle(args.file, args.dir, bn_list, args.out_dir)
 
     #
     # Close the log file if --log
