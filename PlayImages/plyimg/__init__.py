@@ -30,8 +30,9 @@ import re
 # Include specific packages.
 #
 
+import plyimg.util as util
+import plyimg.core as core
 import plyimg.video
-import plyimg.util
 
 #
 # Build argument parser and return it.
@@ -176,24 +177,6 @@ Usage 6: python -m plyimg --fps -r
     return parser.parse_args()
 
 #
-# It reads base names in the dir directory.
-#
-
-def read_base_names(dir):
-    bn_list = []
-    if not os.path.exists(dir):
-            print('Error! The directory is not found.')
-            print(dir)
-            sys.exit(0)
-
-    for fn in os.listdir(dir):
-        path = os.path.join(dir, fn)
-        if not os.path.isdir(path):
-            bn_list.append(fn)
-
-    return bn_list
-
-#
 # It load Config.py
 #
 
@@ -208,17 +191,6 @@ def read_config():
 
     from config import config
     return config[name]
-
-#
-# Specify a default value for args.name if it doesn't exist.
-#
-
-def set_default_arg(config, args, arg, name):
-    if arg in config:
-        #pdb.set_trace()
-        if vars(args)[name] is None:
-            vars(args)[name] = config[arg]
-            print('Override %s = %s' % (name, vars(args)[name]))
 
 def dispatch_key(key, step, v):
 
@@ -292,8 +264,10 @@ def main():
         # Override args
         #
 
-        set_default_arg(config, args, '--video', 'video_fn')
-        set_default_arg(config, args, '--ri', 'record_images_dir')
+        util.set_default_arg(config, args, '--video', 'video_fn')
+        util.set_default_arg(config, args, '--ri', 'record_images_dir')
+
+        util.set_config(config)
 
     #
     # Create a video object.
@@ -417,7 +391,7 @@ def main():
         #
 
         if args.transform:
-            util.transform(frame)
+            core.transform(frame)
 
         #
         # show the frame

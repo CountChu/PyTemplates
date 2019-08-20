@@ -1,134 +1,81 @@
 #
 # FILENAME.
-#       Util.py - Utility Module.
+#       util.py - Utility Module.
 #
 # FUNCTIONAL DESCRIPTION.
-#       The module provide app with API.
+#       The module provides app with common utility functions.
 #
 # NOTICE.
 #       Author: visualge@gmail.com (CountChu)
-#       Created on 2019/8/11
+#       Created on 2019/4/24
 #
 
 #
 # Include standard packages.
 #
 
+import os
+import sys
+import re
+import logging
 import pdb
-import cv2
 
 #
 # Include specific packages.
 #
 
 #
-# It handles them.
+# It reads file content into lines.
 #
 
-def transform(frame):
+def read_file_content(fn):
 
-    #
-    # Define colors
-    #
+    if not os.path.exists(fn):
+        print('Error! The file is not found.')
+        print(fn)
+        sys.exit(0)
 
-    green = (0, 255, 0)                 # green
-    red = (0, 0, 255)                   # red
-    white = (255, 255, 255)             # white
+    f = open(fn, 'r')
+    lines = f.readlines()
+    f.close()
 
-    #
-    # Define the layout.
-    #
+    return lines
 
-    x0 = 200
-    y0 = 300
-    dx = 20
-    dy = 20
+#
+# It reads base names in the dir directory.
+#
 
-    #
-    # Draw rectangles
-    #
+def read_base_names(dir):
+    bn_list = []
+    if not os.path.exists(dir):
+            print('Error! The directory is not found.')
+            print(dir)
+            sys.exit(0)
 
-    x = x0
-    y = y0
-    w = 30
-    h = 40
-    cv2.rectangle(frame, (x, y, w, h), green)
+    for fn in os.listdir(dir):
+        path = os.path.join(dir, fn)
+        if not os.path.isdir(path):
+            bn_list.append(fn)
 
-    y += h + 10
-    cv2.rectangle(frame, (x, y, w, h), green, cv2.FILLED)
+    return bn_list
 
-    #
-    # Draw circles
-    #
+#
+# Specify a default value for args.name if it doesn't exist.
+#
 
-    x += (w+20)
-    y = y0
-    cv2.circle(frame, (x, y), 2, red, -1)
+def set_default_arg(config, args, arg, name):
+    if arg in config:
+        if vars(args)[name] is None:
+            vars(args)[name] = config[arg]
+            print('Override %s = %s' % (name, vars(args)[name]))
+            config[name] = config[arg]
 
-    y += dy
-    cv2.circle(frame, (x, y), 4, red, -1)
+#
+# set config.
+#
 
-    y += dy
-    cv2.circle(frame, (x, y), 6, red, -1)
-
-    y += dy
-    cv2.circle(frame, (x, y), 2, red, 1)
-
-    y += dy
-    cv2.circle(frame, (x, y), 4, red, 1)
-
-    y += dy
-    cv2.circle(frame, (x, y), 6, red, 1)
-
-    y += dy
-    cv2.circle(frame, (x, y), 2, red, 2)
-
-    y += dy
-    cv2.circle(frame, (x, y), 4, red, 2)
-
-    y += dy
-    cv2.circle(frame, (x, y), 6, red, 2)
-
-    #
-    # Draw texts
-    #
-
-    x += dx
-    y = y0
-    cv2.putText(frame, "Test", (x, y), cv2.FONT_HERSHEY_COMPLEX, 0.4, green)
-
-    y += dy
-    cv2.putText(frame, "Test it.", (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.4, green)
-
-    y += dy
-    cv2.putText(frame, "Test it.", (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, green)
-
-    y += dy
-    cv2.putText(frame, "Test it.", (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, green)
-
-    y += dy
-    cv2.putText(frame, "Test it.", (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.4, green, 2)
-
-    y += dy
-    cv2.putText(frame, "Test it.", (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, green, 2)
-
-    y += dy
-    cv2.putText(frame, "Test it.", (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, green, 2)
-
-    #
-    # Draw lines
-    #
-
-    x += 80
-
-    y = y0
-    cv2.line(frame, (x, y), (x+40, y+10), red, 1)
-
-    y += dy
-    cv2.line(frame, (x, y), (x+40, y+10), red, 2)
-
-    y += dy
-    cv2.line(frame, (x, y), (x+40, y+10), red, 1, cv2.LINE_AA)
-
-    y += dy
-    cv2.line(frame, (x, y), (x+40, y+10), red, 2, cv2.LINE_AA)
+CFG = {}
+def set_config(config):
+    global CFG
+    CFG = config
+    logging.info('CFG = %s' % CFG)
