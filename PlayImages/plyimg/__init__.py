@@ -1,10 +1,9 @@
 #
 # FILENAME.
-#       PlayImages.py - Play Images Application.
+#       __init__.py - COMPANY_NAME(TM) Initialize Package.
 #
 # FUNCTIONAL DESCRIPTION.
-#       The app plays images or video optionally step by step. The app is also
-#       a template. We can modify it to develop applications of computer vision.
+#       The module initializes the plyimg package.
 #
 # NOTICE.
 #       Author: visualge@gmail.com (CountChu)
@@ -49,14 +48,14 @@ Usage 1: python -m plyimg --video TestVideo/video.MP4 --step
 Usage 2: python -m plyimg --video TestVideo/video.MP4 --ri TestImages
     Play the video file and save frames in the TestImages directory.
 
-Usage 3: python -m plyimg --images TestImages --step
+Usage 3: python -m plyimg --image TestImages --step
     Play images in the directory TestImages step by step.
 
-Usage 4: python -m plyimg --images TestImages --fps -r
+Usage 4: python -m plyimg --image TestImages --fps -r
     Play images in the directory TestImages with FPS and combined them in a
     video out.mp4.
 
-Usage 5: python -m plyimg --images TestImages --step -t
+Usage 5: python -m plyimg --image TestImages --step -t
     Play images in the directory TestImages step by step and transform each
     frame by calling Util.transform(). You can modify the function to develop
     your specific application of computer vision.
@@ -109,8 +108,8 @@ Usage 6: python -m plyimg --fps -r
             help="A path to the video file")
 
     parser.add_argument(
-            '--images',
-            dest='images_dir',
+            '--image',
+            dest='image_dir',
             help='A directory that contains images')
 
     parser.add_argument(
@@ -145,8 +144,15 @@ Usage 6: python -m plyimg --fps -r
             help="Record video.")
 
     parser.add_argument(
+            "--sd",
+            dest="slowdown",
+            type=int,
+            default=0,
+            help="It follows -r. It slows down the output video by specifying a number of repeated frames")
+
+    parser.add_argument(
             "--ri",
-            dest="record_images_dir",
+            dest="record_image_dir",
             help="A directory where images are recorded")
 
     parser.add_argument(
@@ -162,17 +168,16 @@ Usage 6: python -m plyimg --fps -r
             help="Display base name.")
 
     parser.add_argument(
-            "--sd",
-            dest="slowdown",
-            type=int,
-            default=0,
-            help="It follows -r. It slows down the output video by specifying a number of repeated frames")
-
-    parser.add_argument(
             "-t",
             dest="transform",
             action='store_true',
             help="Enable transformation.")
+
+    parser.add_argument(
+            "--nd",
+            dest="no_display",
+            action='store_true',
+            help="Don't display the images or video.")
 
     return parser.parse_args()
 
@@ -242,7 +247,7 @@ def main():
     # Check arguments.
     #
 
-    if args.video_fn is not None and args.images_dir is not None:
+    if args.video_fn is not None and args.image_dir is not None:
         print ('Error. Arguments are wrong.')
         sys.exit(0)
 
@@ -265,7 +270,7 @@ def main():
         #
 
         util.set_default_arg(config, args, '--video', 'video_fn')
-        util.set_default_arg(config, args, '--ri', 'record_images_dir')
+        util.set_default_arg(config, args, '--ri', 'record_image_dir')
 
         util.set_config(config)
 
@@ -284,20 +289,20 @@ def main():
         v.load_video_file(args.video_fn)
 
     #
-    # Load image files if --images
+    # Load image files if --image
     #
 
-    if args.images_dir is not None:
-        print('Load image files from %s.' % args.images_dir)
-        v.load_image_files(args.images_dir, args.begin_num, args.end_num)
+    if args.image_dir is not None:
+        print('Load image files from %s.' % args.image_dir)
+        v.load_image_files(args.image_dir, args.begin_num, args.end_num)
 
     #pdb.set_trace()
 
     #
-    # Open camera if --video and --images are not specified.
+    # Open camera if --video and --image are not specified.
     #
 
-    if args.video_fn is None and args.images_dir is None:
+    if args.video_fn is None and args.image_dir is None:
         print('Open the camera.')
         v.open_cam()
 
@@ -320,6 +325,8 @@ def main():
     #
     # loop over the frames of the video
     #
+
+    t0 = time.time()
 
     while True:
 
@@ -397,7 +404,8 @@ def main():
         # show the frame
         #
 
-        cv2.imshow("Frame", frame)
+        if not args.no_display:
+            cv2.imshow("Frame", frame)
 
         #
         # Record the frame in a video if -r
@@ -414,11 +422,11 @@ def main():
         # Record the frame in a image if --ri
         #
 
-        if args.record_images_dir != None:
-            if not os.path.exists(args.record_images_dir):
-                print('Create %s' % args.record_images_dir)
-                os.mkdir(args.record_images_dir)
-            fn = '%s/%04d.jpg' % (args.record_images_dir, v.num)
+        if args.record_image_dir != None:
+            if not os.path.exists(args.record_image_dir):
+                print('Create %s' % args.record_image_dir)
+                os.mkdir(args.record_image_dir)
+            fn = '%s/%04d.jpg' % (args.record_image_dir, v.num)
             print('Write %s' % fn)
             cv2.imwrite(fn, frame)
 
@@ -447,6 +455,9 @@ def main():
         if not dispatch_key(key, step, v):
             break
 
+    t1 = time.time()
+    diff_time = int(t1 - t0)
+    print('Time taken %d seconds.' % diff_time)
 
     #
     # cleanup the camera and close any open windows

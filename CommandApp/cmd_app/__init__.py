@@ -20,7 +20,6 @@ import argparse
 import logging
 import pdb
 import os
-import json
 import sys
 import re
 
@@ -77,6 +76,12 @@ Usage 3: python -m cmd_app README.md -d images -o output
             action='store_true',
             help="Import config.py")
 
+    parser.add_argument(
+            "--check",
+            dest="check",
+            action='store_true',
+            help="Enable check.")
+
     #
     # Anonymous arguments.
     #
@@ -123,6 +128,10 @@ def read_config():
     name = res.group(1)
 
     from config import config
+
+    if name not in config:
+        return None
+
     return config[name]
 
 def main():
@@ -199,6 +208,7 @@ def main():
     bn_list = []
     if 'dir' in args and args.dir != None:
         bn_list = util.read_base_names(args.dir)
+        #pdb.set_trace()
 
     #
     # Here is core function.
@@ -212,6 +222,6 @@ def main():
     #
 
     if args.log_fn != None:
-        logF.close()
+        log_f.close()
 
 main()
