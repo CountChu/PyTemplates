@@ -1,6 +1,6 @@
 config = {
     'cmd_app': {
-        "-d": "images",
-        "-o": "output"
+        '-d': 'images',
+        '-o': 'output'
     }
 }

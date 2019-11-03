@@ -22,6 +22,7 @@ import pdb
 import os
 import sys
 import re
+import datetime
 
 #
 # Include specific packages.
@@ -68,8 +69,9 @@ Usage 3: python -m cmd_app README.md -d images -o output
 
     parser.add_argument(
             '--log',
-            dest='log_fn',
-            help='A name of a log file.')
+            dest='log',
+            action='store_true',
+            help='Enable to save log in a file.')
 
     parser.add_argument(
             '--cfg',
@@ -122,7 +124,7 @@ def read_config():
 
     pattern = "\<module\s\\'(.+)\\'\sfrom"
     text = str(sys.modules[__name__])
-    logging.info('text = %s' % text)
+    logging.debug('text = %s' % text)
     res = re.match(pattern, text)
     #pdb.set_trace()
     name = res.group(1)
@@ -144,12 +146,38 @@ def main():
     #pdb.set_trace()
 
     #
-    # Enable debug messages if --debug
+    # Specify loggin level. If --debug, the level is DEBUG.
     #
 
+    level = logging.INFO
     if args.debug:
-        logging.basicConfig(level=logging.DEBUG, format='%(message)s')
-    logging.info(args)
+        level = logging.DEBUG
+
+    #
+    # Create a handler of logging of which the default is console.
+    #
+
+    handlers = []
+    handlers += [logging.StreamHandler()]
+
+    #
+    # If --log, enable to save log in a file.
+    #
+
+    if args.log:
+        tag = 'CmdApp'
+        log_fn = datetime.datetime.now().strftime(tag+"-%Y%m%d-%H%M%S.log")
+        print('Create a log file: %s' % log_fn)
+        handlers += [logging.FileHandler(log_fn)]
+
+    logging.basicConfig(
+        level=level,
+        format='%(asctime)s.%(msecs)03d |%(levelname)-8s |%(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S',
+        handlers=handlers)
+
+    logging.debug(args)
+    logging.info('The level is info.')
 
     #
     # Enable verbose messages if --verbose
@@ -161,13 +189,6 @@ def main():
     #
     # Check arguments.
     #
-
-    #
-    # Open a log file if --log
-    #
-
-    if args.log_fn != None:
-        log_f = open(args.log_fn, 'w')
 
     #
     # If --cfg, specify default values if args don't exist.
@@ -184,11 +205,14 @@ def main():
         util.set_default_arg(config, args, '-o', 'out_dir')
 
         util.set_config(config)
+        from cmd_app.util import cfg
+        logging.debug('cfg = %s' % cfg)
 
     #
     # Specify out_dir
     #
 
+    #pdb.set_trace()
     if args.out_dir is None:
         args.out_dir = '%s#CommandApp' % args.dir
         print('Specify out_dir = %s' % args.out_dir)
@@ -216,12 +240,5 @@ def main():
 
     #pdb.set_trace()
     core.handle(args.file, args.dir, bn_list, args.out_dir)
-
-    #
-    # Close the log file if --log
-    #
-
-    if args.log_fn != None:
-        log_f.close()
 
 main()

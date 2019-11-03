@@ -97,7 +97,7 @@ def write_json(dict, fn):
     f.close()
 
 #
-# Ask if remove a directory and build the directory. 
+# Ask if remove a directory and build the directory.
 #
 
 def ask_remove_and_build_dir(dir):
@@ -128,8 +128,8 @@ def override_arg(config, args, arg, name):
 # set config.
 #
 
-CFG = {}
+cfg = {}
 def set_config(config):
-    global CFG
-    CFG = config
-    logging.info('CFG = %s' % CFG)
+    global cfg
+    cfg = config
+    print('cfg = %s' % cfg)
