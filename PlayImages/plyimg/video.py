@@ -37,19 +37,38 @@ import time
 
 class Video:
 
+    GLOBAL_DEVICE_LIST = {}
+
+    VIDEO_SUPPORT_FORMAT = ['.mp4', '.avi']
+
     def __init__(self):
         self.cam = None
         self.img_fn_dict = None
-        self.first_num = 0               # as background.
+        self.first_num = 0              # as background.
         self.num = 0                    # current frame.
         self.begin_num = 0
         self.end_num = None
+        self.device = None
 
-    def open_cam(self):
-        self.cam = cv2.VideoCapture(0)
+    def open_cam(self, device=0):
+        if device in Video.GLOBAL_DEVICE_LIST.keys():
+            logging.error('Error. device %d already used' % device)
+            return False
+
+        #
+        # Maybe allocate a previous video instance during GLOBAL_DEVICE_LIST
+        #
+
+        Video.GLOBAL_DEVICE_LIST[device] = (self, 1)
+        self.device = device
+        self.cam = cv2.VideoCapture(device)
         time.sleep(0.25)
 
+        return True
+
     def load_video_file(self, video_fn):
+        if not os.path.exists(video_fn) or video_fn.split('.')[-1] not in self.VIDEO_SUPPORT_FORMAT:
+            logging.info('Error. Check the video path %s' % (video_fn))
         self.cam = cv2.VideoCapture(video_fn)
 
     def load_image_files(self, image_dir, begin_num, end_num):
@@ -204,6 +223,17 @@ class Video:
         if self.cam != None:
             self.cam.release()
 
+        #
+        # Del the last reference device
+        #
+        
+        if self.device != None:
+            if Video.GLOBAL_DEVICE_LIST[self.device][1] == 1:
+                del Video.GLOBAL_DEVICE_LIST[self.device]
+            else:
+                Video.GLOBAL_DEVICE_LIST[self.device][1] -= 1
+            print('Close cam %d' % self.device)
+
 def video_writer(frame, fn):
     vw = cv2.VideoWriter(fn, get_video_type(fn), 25, (frame.shape[1], frame.shape[0]))
     return vw
@@ -225,6 +255,19 @@ def get_video_type(fn):
 
 VIDEO_TYPE = {
     'avi': cv2.VideoWriter_fourcc(*'XVID'),
-    #'mp4': cv2.VideoWriter_fourcc(*'H264'),
-    'mp4': cv2.VideoWriter_fourcc(*'XVID'),
+    'mp4': cv2.VideoWriter_fourcc('M','J','P','G'),
 }
+
+if __name__ == '__main__':
+    custom_video1 = Video()
+    if custom_video1.open_cam(device=0):
+        print('first open')
+
+
+    custom_video2 = Video()
+    if custom_video2.open_cam(device=0):
+        print('reopen')
+        custom_video2.close()
+
+    custom_video1.close()
+    print('end')

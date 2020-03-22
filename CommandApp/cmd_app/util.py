@@ -20,7 +20,10 @@ import os
 import sys
 import re
 import logging
+import json
 import pdb
+import shutil
+from distutils.dir_util import copy_tree
 
 #
 # Include specific packages.
@@ -73,11 +76,60 @@ def set_default_arg(config, args, arg, name):
             config[name] = config[arg]
 
 #
+# Read json from a file
+#
+
+def read_json(fn):
+    f = open(fn)
+    dict = json.load(f)
+    f.close()
+    return dict
+
+#
+# Write json into a file
+#
+
+def write_json(dict, fn):
+    json_str = json.dumps(dict, indent=2)
+
+    f = open(fn, 'w', encoding='utf-8')
+    f.write(json_str)
+    f.close()
+
+#
+# Ask if remove a directory and build the directory.
+#
+
+def ask_remove_and_build_dir(dir):
+
+    if os.path.exists(dir):
+        print('The directory exists. %s' % dir)
+        key = input('Do you want to delete it? [y/n]')
+        if key == 'y':
+            print('Remove it.')
+            shutil.rmtree(dir)
+
+    if not os.path.exists(dir):
+        print('Build the directory %s' % dir)
+        os.mkdir(dir)
+
+#
+# Override args.name.
+#
+
+def override_arg(config, args, arg, name):
+    if arg in config:
+        if vars(args)[name] is not None:
+            vars(args)[name] = config[arg]
+            print('Override %s = %s' % (name, vars(args)[name]))
+            config[name] = config[arg]
+
+#
 # set config.
 #
 
-CFG = {}
+cfg = {}
 def set_config(config):
-    global CFG
-    CFG = config
-    logging.info('CFG = %s' % CFG)
+    global cfg
+    cfg = config
+    print('cfg = %s' % cfg)

@@ -11,6 +11,8 @@ class TestStringMethods(unittest.TestCase):
             'python -m cmd_app README.md',
             'python -m cmd_app README.md -d images',
             'python -m cmd_app README.md -d images -o output',
+            'python -m cmd_app README.md -d images -o output --log',
+            'python -m cmd_app README.md -d images -o output --log --level info',
             'python -m cmd_app README.md --cfg',            
             ]
 

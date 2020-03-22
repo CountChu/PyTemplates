@@ -1,15 +1,13 @@
 #
 # FILENAME.
-#       core.py - COMPANY_NAME(TM) Core Module.
+#       core.py - Core Module.
 #
 # FUNCTIONAL DESCRIPTION.
 #       The module provides app with core API.
 #
 # NOTICE.
-#       COMPANY_NAME Confidential
-#       COPYRIGHT COMPANY_NAME 2019 All RIGHTS RESERVED
 #       Author: visualge@gmail.com (CountChu)
-#       Created on 2019/4/24
+#       Created on 2019/11/1
 #
 
 #
@@ -17,6 +15,7 @@
 #
 
 import pdb
+import logging
 
 #
 # Include specific packages.
@@ -29,9 +28,10 @@ import cmd_app.util as util
 #
 
 def handle(fn, dir, bn_list, out_dir):
-    print('handle()')
-    print('fn = %s' % fn)
-    print('dir = %s' % dir)
-    print('bn_list = %s' % bn_list)
-    print('out_dir = %s' % out_dir)
-    print('CFG = %s' % util.CFG)
+    logging.debug('handle()')
+    logging.debug('fn = %s' % fn)
+    logging.debug('dir = %s' % dir)
+    logging.debug('bn_list = %s' % bn_list)
+    logging.debug('out_dir = %s' % out_dir)
+    logging.debug('cfg = %s' % util.cfg)
+    #pdb.set_trace()
