@@ -33,5 +33,5 @@ def handle(fn, dir, bn_list, out_dir):
     logging.debug('dir = %s' % dir)
     logging.debug('bn_list = %s' % bn_list)
     logging.debug('out_dir = %s' % out_dir)
-    logging.debug('CFG = %s' % util.CFG)
+    logging.debug('cfg = %s' % util.cfg)
     #pdb.set_trace()

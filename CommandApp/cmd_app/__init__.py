@@ -40,12 +40,20 @@ def build_args():
     desc = '''
 The app parses command lines and dispatches the commands.
 
-Usage 1: python -m cmd_app README.md
+Mode 1: Run the script.
+    python cmd_app.py README.md
+    python cmd_app.py README.md -d images
+    python cmd_app.py README.md -d images -o output
 
-Usage 2: python -m cmd_app README.md -d images
-
-Usage 3: python -m cmd_app README.md -d images -o output
+Mode 2: Run library module as a script.
+    python -m cmd_app README.md
+    python -m cmd_app README.md -d images
+    python -m cmd_app README.md -d images -o output
 '''
+
+    #
+    # Build an ArgumentParser object to parse arguments.
+    #
 
     parser = argparse.ArgumentParser(
                 formatter_class=argparse.RawTextHelpFormatter,
@@ -62,16 +70,16 @@ Usage 3: python -m cmd_app README.md -d images -o output
             help="Print verbose messages")
 
     parser.add_argument(
-            "--debug",
-            dest="debug",
-            action='store_true',
-            help="Show debug messages")
-
-    parser.add_argument(
             '--log',
             dest='log',
             action='store_true',
             help='Enable to save log in a file.')
+            
+    parser.add_argument(
+            '--level',
+            dest='level',
+            default='critical',
+            help='Level of logging. debug->info->warning->error->critical')
 
     parser.add_argument(
             '--cfg',
@@ -99,7 +107,6 @@ Usage 3: python -m cmd_app README.md -d images -o output
     parser.add_argument(
             '-d',
             dest='dir',
-            #required=True,
             help='A directory that contains files')
 
     parser.add_argument(
@@ -113,11 +120,17 @@ Usage 3: python -m cmd_app README.md -d images -o output
             default=4,
             dest="start",
             help="Input start")
+            
+    parser.add_argument(
+            '-e',
+            dest='emulate',
+            action='store_true',
+            help='Emulate real environment.')             
 
     return parser.parse_args()
 
 #
-# It load Config.py
+# It load config.py
 #
 
 def read_config():
@@ -143,15 +156,20 @@ def main():
     #
 
     args = build_args()
-    #pdb.set_trace()
 
     #
-    # Specify loggin level. If --debug, the level is DEBUG.
+    # Specify loggin level.
     #
 
-    level = logging.INFO
-    if args.debug:
-        level = logging.DEBUG
+    level_dict = {
+        'debug':        logging.DEBUG,
+        'info':         logging.INFO,
+        'warning':      logging.WARNING,
+        'error':        logging.ERROR,
+        'critical':     logging.CRITICAL
+        }
+    
+    level = level_dict[args.level]
 
     #
     # Create a handler of logging of which the default is console.
@@ -167,8 +185,18 @@ def main():
     if args.log:
         tag = 'CmdApp'
         log_fn = datetime.datetime.now().strftime(tag+"-%Y%m%d-%H%M%S.log")
+        
+        if not os.path.exists('log'):
+            print('Build the log directory')
+            os.mkdir('log')
+        
+        log_fn = os.path.join('log', log_fn)
         print('Create a log file: %s' % log_fn)
         handlers += [logging.FileHandler(log_fn)]
+
+    #
+    # Format the log.
+    #        
 
     logging.basicConfig(
         level=level,
@@ -176,8 +204,13 @@ def main():
         datefmt='%Y-%m-%d %H:%M:%S',
         handlers=handlers)
 
-    logging.debug(args)
-    logging.info('The level is info.')
+    logging.debug('args = %s' % args)
+    logging.debug('This is debug.')
+    logging.info('This is info.')
+    logging.warning('This is warning.')
+    logging.error('This is error.')
+    logging.critical('This is critical.')
+    
 
     #
     # Enable verbose messages if --verbose
