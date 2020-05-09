@@ -22,8 +22,8 @@ import logging
 # Include private packages.
 #
 
-import cmd_app.util as util
-from cmd_app.util import lno, idt
+import common.log
+from common.log import lno, idt
 
 #
 # Init the log of the module.
@@ -34,7 +34,7 @@ def init_log(level_str, log_fn=None):
     global log
 
     tag = 'CR'
-    log = util.build_logger(tag, level_str, log_fn)
+    log = common.log.build_logger(tag, level_str, log_fn)
     
     #
     # Init logs of modules in the low-level packages.
@@ -53,6 +53,6 @@ def handle(fn, dir, bn_list, out_dir):
     log.info('dir = %s' % dir)
     log.info('bn_list = %s' % bn_list)
     log.info('out_dir = %s' % out_dir)
-    log.info('cfg = %s' % util.cfg)
+    log.info('cfg = %s' % common.util.cfg)
     log.info('%s</handle> #%d' % (idt(), lno()))
     #pdb.set_trace()

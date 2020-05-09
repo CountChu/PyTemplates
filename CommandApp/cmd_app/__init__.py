@@ -29,7 +29,8 @@ import datetime
 # Include private packages.
 #
 
-import cmd_app.util as util
+import common.log
+import common.util
 import cmd_app.core as core
 
 #
@@ -64,7 +65,7 @@ def main():
     # set logging.
     #
     
-    util.set_logging(args.level, log_fn)
+    common.log.set_logging(args.level, log_fn)
     logging.debug(args) 
     logging.debug('It is debug level.')
     logging.info('It is info level.')
@@ -94,11 +95,11 @@ def main():
         # Override args
         #
 
-        util.set_default_arg(config, args, '-d', 'dir')
-        util.set_default_arg(config, args, '-o', 'out_dir')
+        common.util.set_default_arg(config, args, '-d', 'dir')
+        common.util.set_default_arg(config, args, '-o', 'out_dir')
 
-        util.set_config(config)
-        from cmd_app.util import cfg
+        common.util.set_config(config)
+        from common.util import cfg
         logging.debug('cfg = %s' % cfg)
         
     #
@@ -130,7 +131,7 @@ def main():
 
     bn_list = []
     if 'dir' in args and args.dir != None:
-        bn_list = util.read_base_names(args.dir)
+        bn_list = common.util.read_base_names(args.dir)
         #pdb.set_trace()
 
     #
