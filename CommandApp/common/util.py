@@ -1,19 +1,20 @@
 #
 # FILENAME.
-#       util.py - COMPANY_NAME(TM) Utility Module.
+#       util.py - Utility Module.
 #
 # FUNCTIONAL DESCRIPTION.
 #       The module provides app with common utility functions.
 #
 # NOTICE.
-#       COMPANY_NAME Confidential
-#       COPYRIGHT COMPANY_NAME 2019 All RIGHTS RESERVED
 #       Author: visualge@gmail.com (CountChu)
 #       Created on 2019/4/24
+#       Updated on 2020/5/9
 #
 
 #
+#-------------------------------------------------------------------------------
 # Include standard packages.
+#-------------------------------------------------------------------------------
 #
 
 import os
@@ -26,8 +27,24 @@ import shutil
 from distutils.dir_util import copy_tree
 
 #
-# Include specific packages.
+#-------------------------------------------------------------------------------
+# Include private packages.
+#-------------------------------------------------------------------------------
 #
+       
+#
+#-------------------------------------------------------------------------------
+# Other functions.
+#-------------------------------------------------------------------------------
+#    
+
+#
+# get a string of a timestamp with milliseconds.
+# E.g., '2019-09-05 17:18:08.339'
+#
+
+def get_now():
+    return str(datetime.datetime.now())[:-3]    
 
 #
 # It reads file content into lines.

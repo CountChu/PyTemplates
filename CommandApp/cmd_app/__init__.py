@@ -10,6 +10,7 @@
 #       COPYRIGHT COMPANY_NAME 2019 All RIGHTS RESERVED
 #       Author: visualge@gmail.com (CountChu)
 #       Created on 2019/4/24
+#       Updated on 2020/5/9
 #
 
 #
@@ -25,11 +26,121 @@ import re
 import datetime
 
 #
-# Include specific packages.
+# Include private packages.
 #
 
-import cmd_app.util as util
+import common.log
+import common.util
 import cmd_app.core as core
+
+#
+# Main function.
+#
+
+def main():
+
+    #
+    # Parse arguments
+    #
+
+    args = build_args()
+    
+    #
+    # If --log, enable to save log in a file.
+    #
+
+    log_fn = None
+    if args.log:
+        tag = 'CM'
+        log_fn = datetime.datetime.now().strftime(tag + "-%Y%m%d-%H%M%S.log")
+        
+        if not os.path.exists('log'):
+            print('Build the log directory')
+            os.mkdir('log')        
+        
+        log_fn = os.path.join('log', log_fn)
+        print('Create a log file: %s' % log_fn)
+        
+    #
+    # set logging.
+    #
+    
+    common.log.set_logging(args.level, log_fn)
+    logging.debug(args) 
+    logging.debug('It is debug level.')
+    logging.info('It is info level.')
+    logging.warning('It is warning level.')
+    logging.error('It is error level.')
+    logging.critical('It is critical level.')
+    
+    #
+    # Enable verbose messages if --verbose
+    #
+
+    if args.verbose:
+        print('.............verbose..............')
+
+    #
+    # Check arguments.
+    #
+
+    #
+    # If --cfg, specify default values if args don't exist.
+    #
+
+    if args.cfg:
+        config = read_config()
+
+        #
+        # Override args
+        #
+
+        common.util.set_default_arg(config, args, '-d', 'dir')
+        common.util.set_default_arg(config, args, '-o', 'out_dir')
+
+        common.util.set_config(config)
+        from common.util import cfg
+        logging.debug('cfg = %s' % cfg)
+        
+    #
+    # Init logs of modules.
+    #    
+
+    core.init_log(args.level, log_fn)
+
+    #
+    # Specify out_dir
+    #
+
+    #pdb.set_trace()
+    if args.out_dir is None:
+        args.out_dir = '%s#CommandApp' % args.dir
+        print('Specify out_dir = %s' % args.out_dir)
+
+    #
+    # Check outputDir. If it doesn't exist, built it.
+    #
+
+    if not os.path.exists(args.out_dir):
+        print('Make directory: %s' % args.out_dir)
+        os.mkdir(args.out_dir)
+
+    #
+    # Read file base names if -d.
+    #
+
+    bn_list = []
+    if 'dir' in args and args.dir != None:
+        bn_list = common.util.read_base_names(args.dir)
+        #pdb.set_trace()
+
+    #
+    # Here is core function.
+    #
+
+    #pdb.set_trace()
+    logging.info('Call core.handle()')
+    core.handle(args.file, args.dir, bn_list, args.out_dir)
 
 #
 # Build arguments
@@ -79,7 +190,7 @@ Mode 2: Run library module as a script.
             '--level',
             dest='level',
             default='critical',
-            help='Level of logging. debug->info->warning->error->critical')
+            help='Level of logging. debug < info < warning < error < critical')
 
     parser.add_argument(
             '--cfg',
@@ -148,130 +259,9 @@ def read_config():
         return None
 
     return config[name]
-
-def main():
-
-    #
-    # Parse arguments
-    #
-
-    args = build_args()
-
-    #
-    # Specify loggin level.
-    #
-
-    level_dict = {
-        'debug':        logging.DEBUG,
-        'info':         logging.INFO,
-        'warning':      logging.WARNING,
-        'error':        logging.ERROR,
-        'critical':     logging.CRITICAL
-        }
     
-    level = level_dict[args.level]
-
-    #
-    # Create a handler of logging of which the default is console.
-    #
-
-    handlers = []
-    handlers += [logging.StreamHandler()]
-
-    #
-    # If --log, enable to save log in a file.
-    #
-
-    if args.log:
-        tag = 'CmdApp'
-        log_fn = datetime.datetime.now().strftime(tag+"-%Y%m%d-%H%M%S.log")
-        
-        if not os.path.exists('log'):
-            print('Build the log directory')
-            os.mkdir('log')
-        
-        log_fn = os.path.join('log', log_fn)
-        print('Create a log file: %s' % log_fn)
-        handlers += [logging.FileHandler(log_fn)]
-
-    #
-    # Format the log.
-    #        
-
-    logging.basicConfig(
-        level=level,
-        format='%(asctime)s.%(msecs)03d |%(levelname)-8s |%(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S',
-        handlers=handlers)
-
-    logging.debug('args = %s' % args)
-    logging.debug('This is debug.')
-    logging.info('This is info.')
-    logging.warning('This is warning.')
-    logging.error('This is error.')
-    logging.critical('This is critical.')
-    
-
-    #
-    # Enable verbose messages if --verbose
-    #
-
-    if args.verbose:
-        print('.............verbose..............')
-
-    #
-    # Check arguments.
-    #
-
-    #
-    # If --cfg, specify default values if args don't exist.
-    #
-
-    if args.cfg:
-        config = read_config()
-
-        #
-        # Override args
-        #
-
-        util.set_default_arg(config, args, '-d', 'dir')
-        util.set_default_arg(config, args, '-o', 'out_dir')
-
-        util.set_config(config)
-        from cmd_app.util import cfg
-        logging.debug('cfg = %s' % cfg)
-
-    #
-    # Specify out_dir
-    #
-
-    #pdb.set_trace()
-    if args.out_dir is None:
-        args.out_dir = '%s#CommandApp' % args.dir
-        print('Specify out_dir = %s' % args.out_dir)
-
-    #
-    # Check outputDir. If it doesn't exist, built it.
-    #
-
-    if not os.path.exists(args.out_dir):
-        print('Make directory: %s' % args.out_dir)
-        os.mkdir(args.out_dir)
-
-    #
-    # Read file base names if -d.
-    #
-
-    bn_list = []
-    if 'dir' in args and args.dir != None:
-        bn_list = util.read_base_names(args.dir)
-        #pdb.set_trace()
-
-    #
-    # Here is core function.
-    #
-
-    #pdb.set_trace()
-    core.handle(args.file, args.dir, bn_list, args.out_dir)
+#
+# Run it.
+#      
 
 main()
