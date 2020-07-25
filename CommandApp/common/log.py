@@ -97,6 +97,25 @@ def build_logger(tag, level_str, log_fn):
     
     return log
     
+def build_simple_logger(tag, level_str, log_fn):
+
+    log = logging.getLogger(tag)
+    log.propagate  = False
+    
+    level = get_level(level_str)
+    log.setLevel(level)
+
+    #
+    # Create FileHandler and add it.
+    #
+
+    if log_fn != None:
+        fh = logging.FileHandler(log_fn)
+        fh.setLevel(level)
+        log.addHandler(fh)
+    
+    return log    
+    
 def get_level(level_str):
 
     #
