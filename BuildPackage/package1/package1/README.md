@@ -1,5 +1,10 @@
 # package1
-The package1 displays messages when importing it.
+The package1 provides method1().
+```
+[package1]
+  __init_.py
+    method1()
+```
 
 ## Install the package editable
 ```

@@ -1,5 +1,12 @@
 # package2
-The package2 provides module1 and module2.
+The package2 provides module1.method1() and module2.method1().
+```
+[package2]
+  module1.py
+    method1()
+  module2.py
+    method1()
+```
 
 ## Install the package editable
 ```
